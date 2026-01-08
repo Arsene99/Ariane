@@ -10,7 +10,6 @@
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', Arial, sans-serif;
-            -webkit-tap-highlight-color: transparent;
         }
 
         body {
@@ -24,58 +23,15 @@
 
         .login-container {
             width: 100%;
-            max-width: 420px;
+            max-width: 400px;
         }
 
         .login-card {
             background: white;
-            border-radius: 24px;
-            padding: 48px 40px;
+            border-radius: 20px;
+            padding: 60px 40px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(40px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .logo {
             text-align: center;
-            margin-bottom: 32px;
-        }
-
-        .logo-icon {
-            font-size: 64px;
-            margin-bottom: 16px;
-            animation: bounce 2s infinite;
-        }
-
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-
-        h1 {
-            color: #333;
-            text-align: center;
-            margin-bottom: 8px;
-            font-size: 28px;
-            font-weight: 700;
-        }
-
-        .subtitle {
-            color: #666;
-            text-align: center;
-            margin-bottom: 40px;
-            font-size: 15px;
-            line-height: 1.5;
         }
 
         .google-btn {
@@ -87,7 +43,7 @@
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -96,20 +52,14 @@
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
 
-        .google-btn:hover:not(:disabled) {
+        .google-btn:hover {
             border-color: #4285f4;
             box-shadow: 0 4px 16px rgba(66, 133, 244, 0.3);
             transform: translateY(-2px);
         }
 
-        .google-btn:active:not(:disabled) {
+        .google-btn:active {
             transform: translateY(0);
-        }
-
-        .google-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
         }
 
         .google-icon {
@@ -117,144 +67,9 @@
             height: 20px;
         }
 
-        .spinner {
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #4285f4;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .message-box {
-            padding: 14px 16px;
-            border-radius: 10px;
-            margin-top: 24px;
-            display: none;
-            border-left: 4px solid;
-            font-size: 14px;
-            line-height: 1.6;
-            animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        .error-message {
-            background: #ffebee;
-            color: #c62828;
-            border-color: #c62828;
-        }
-
-        .success-message {
-            background: #e8f5e9;
-            color: #2e7d32;
-            border-color: #2e7d32;
-        }
-
-        .info-box {
-            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
-            padding: 20px;
-            border-radius: 12px;
-            margin-top: 32px;
-            font-size: 13px;
-            color: #555;
-            line-height: 1.6;
-            border: 1px solid #e0e0e0;
-        }
-
-        .info-box strong {
-            color: #333;
-            display: block;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-
-        .info-list {
-            margin-top: 12px;
-            padding-left: 20px;
-        }
-
-        .info-list li {
-            margin-bottom: 6px;
-        }
-
-        .divider {
-            display: flex;
-            align-items: center;
-            text-align: center;
-            margin: 32px 0;
-            color: #999;
-            font-size: 13px;
-        }
-
-        .divider::before,
-        .divider::after {
-            content: '';
-            flex: 1;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        .divider span {
-            padding: 0 16px;
-        }
-
-        .features {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
-            margin-top: 32px;
-        }
-
-        .feature {
-            text-align: center;
-            padding: 16px 8px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            transition: all 0.3s ease;
-        }
-
-        .feature:hover {
-            background: #f0f0f0;
-            transform: translateY(-2px);
-        }
-
-        .feature-icon {
-            font-size: 24px;
-            margin-bottom: 8px;
-        }
-
-        .feature-text {
-            font-size: 12px;
-            color: #666;
-            font-weight: 500;
-        }
-
         @media (max-width: 480px) {
             .login-card {
-                padding: 36px 28px;
-            }
-            
-            h1 {
-                font-size: 24px;
-            }
-
-            .features {
-                grid-template-columns: 1fr;
-                gap: 12px;
+                padding: 50px 30px;
             }
         }
     </style>
@@ -267,12 +82,6 @@
 <body>
     <div class="login-container">
         <div class="login-card">
-            <div class="logo">
-                <div class="logo-icon">🛍️</div>
-                <h1>Bienvenue</h1>
-                <p class="subtitle">Connectez-vous en un clic avec votre compte Google</p>
-            </div>
-            
             <button id="googleSignIn" class="google-btn">
                 <svg class="google-icon" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -280,39 +89,8 @@
                     <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                     <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                 </svg>
-                <span id="btnText">Continuer avec Google</span>
-                <div id="spinner" class="spinner" style="display: none;"></div>
+                <span>Continuer avec Google</span>
             </button>
-
-            <div class="divider">
-                <span>Pourquoi Google ?</span>
-            </div>
-
-            <div class="features">
-                <div class="feature">
-                    <div class="feature-icon">🔒</div>
-                    <div class="feature-text">Sécurisé</div>
-                </div>
-                <div class="feature">
-                    <div class="feature-icon">⚡</div>
-                    <div class="feature-text">Rapide</div>
-                </div>
-                <div class="feature">
-                    <div class="feature-icon">✨</div>
-                    <div class="feature-text">Simple</div>
-                </div>
-            </div>
-            
-            <div id="messageBox" class="message-box"></div>
-            
-            <div class="info-box">
-                <strong>ℹ️ Comment ça marche ?</strong>
-                <ul class="info-list">
-                    <li>Cliquez sur le bouton ci-dessus</li>
-                    <li>Choisissez votre compte Google</li>
-                    <li>Accédez instantanément à la plateforme</li>
-                </ul>
-            </div>
         </div>
     </div>
 
@@ -336,76 +114,18 @@
         // Vérifier si déjà connecté
         auth.onAuthStateChanged(user => {
             if (user) {
-                console.log('✅ Déjà connecté, redirection...');
                 window.location.href = './index.html';
             }
         });
 
-        // Éléments du DOM
-        const googleSignInBtn = document.getElementById('googleSignIn');
-        const btnText = document.getElementById('btnText');
-        const spinner = document.getElementById('spinner');
-        const messageBox = document.getElementById('messageBox');
-
         // Connexion Google
-        googleSignInBtn.addEventListener('click', async function() {
-            // Désactiver le bouton et afficher le chargement
-            googleSignInBtn.disabled = true;
-            btnText.textContent = 'Connexion...';
-            spinner.style.display = 'block';
-            document.querySelector('.google-icon').style.display = 'none';
-            hideMessage();
-            
+        document.getElementById('googleSignIn').addEventListener('click', async function() {
             try {
-                console.log('🔐 Tentative de connexion Google...');
-                
-                // Connexion avec popup Google
-                const result = await auth.signInWithPopup(provider);
-                const user = result.user;
-                
-                console.log('✅ Connexion réussie:', user.email);
-                showMessage('✅ Connexion réussie ! Redirection...', 'success');
-                
-                // Redirection automatique via onAuthStateChanged
-                
+                await auth.signInWithPopup(provider);
             } catch (error) {
-                console.error('❌ Erreur de connexion:', error.code, error.message);
-                
-                // Réactiver le bouton
-                googleSignInBtn.disabled = false;
-                btnText.textContent = 'Continuer avec Google';
-                spinner.style.display = 'none';
-                document.querySelector('.google-icon').style.display = 'block';
-                
-                // Afficher l'erreur
-                showMessage(getErrorMessage(error.code), 'error');
+                console.error('Erreur de connexion:', error);
             }
         });
-
-        function showMessage(message, type) {
-            messageBox.textContent = message;
-            messageBox.className = 'message-box ' + type + '-message';
-            messageBox.style.display = 'block';
-        }
-
-        function hideMessage() {
-            messageBox.style.display = 'none';
-        }
-
-        function getErrorMessage(errorCode) {
-            const errors = {
-                'auth/popup-closed-by-user': '❌ Connexion annulée. Veuillez réessayer.',
-                'auth/popup-blocked': '⚠️ Popup bloquée par le navigateur. Autorisez les popups pour ce site.',
-                'auth/cancelled-popup-request': '⏸️ Connexion annulée.',
-                'auth/network-request-failed': '🌐 Erreur réseau. Vérifiez votre connexion.',
-                'auth/too-many-requests': '⏱️ Trop de tentatives. Réessayez dans quelques minutes.',
-                'auth/operation-not-allowed': '⚠️ La connexion Google n\'est pas activée. Activez-la dans Firebase Console.',
-                'auth/unauthorized-domain': '⚠️ Ce domaine n\'est pas autorisé. Ajoutez-le dans Firebase Console.',
-                'auth/account-exists-with-different-credential': '⚠️ Un compte existe déjà avec cet email.'
-            };
-            
-            return errors[errorCode] || `❌ Erreur: ${errorCode}`;
-        }
     </script>
 </body>
 </html>
