@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accueil - Ariane</title>
+    <link rel="stylesheet" href="styles/navbar.css">
+    
+    <style>
+        *{
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: var(--background-color);
+            min-height: 100vh;
+        }
+
+        #customHomepage {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 100px 20px;
+            font-size: 18px;
+            color: #666;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+    
+    <!-- Import Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <!-- Navbar will be injected here -->
+    <div id="navbar-container"></div>
+    
+    <!-- Conteneur pour les sections personnalisées -->
+    <div id="customHomepage">
+        <!-- Loading state -->
+        <div class="loading">
+            <div class="loading-spinner"></div>
+            Chargement de la page...
+        </div>
+    </div>
+
+    <!-- Import scripts -->
+    <script src="scripts/firebase-config.js"></script>
+    <script src="scripts/homepage-renderer.js"></script>
+    <script src="scripts/auth.js"></script>
+    <script src="navbar.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                loadNavbar();
+                
+                // Vérifier que Firebase est disponible
+                if (typeof firebase === 'undefined') {
+                    document.getElementById('customHomepage').innerHTML = `
+                        <div class="default-message">
+                            <h1>❌ Erreur Firebase</h1>
+                            <p>Firebase n'est pas correctement chargé.</p>
+                            <button class="btn" onclick="location.reload()">Réessayer</button>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Vérifier l'authentification
+                const user = await new Promise((resolve) => {
+                    const unsubscribe = firebase.auth().onAuthStateChanged(user => {
+                        unsubscribe();
+                        resolve(user);
+                    });
+                });
+                
+                if (!user) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+                
+                // Charger le contenu de la page d'accueil
+                await loadHomepageContent();
+                
+            } catch (error) {
+                console.error('Erreur:', error);
+                document.getElementById('customHomepage').innerHTML = `
+                    <div class="default-message">
+                        <h1>⚠️ Erreur de chargement</h1>
+                        <p>Impossible de charger le contenu de la page.</p>
+                        <button class="btn" onclick="location.reload()">Réessayer</button>
+                    </div>
+                `;
+            }
+        });
+        
+        async function loadHomepageContent() {
+            const container = document.getElementById('customHomepage');
+            
+            try {
+                const db = firebase.firestore();
+                const doc = await db.collection('config').doc('homepage').get();
+                
+                if (doc.exists) {
+                    const homepageData = doc.data();
+                    const sections = homepageData.sections || [];
+                    
+                    // Utiliser le renderer pour afficher les sections
+                    homepageRenderer.renderSections(container, sections);
+                } else {
+                    homepageRenderer.showDefaultMessage(container);
+                }
+            } catch (error) {
+                console.error('Erreur chargement homepage:', error);
+                container.innerHTML = `
+                    <div class="default-message">
+                        <h1>⚠️ Erreur de chargement</h1>
+                        <p>Impossible de charger le contenu de la page.</p>
+                        <button class="btn" onclick="location.reload()">Réessayer</button>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

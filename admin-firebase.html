@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuration Administrateur</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .setup-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .status-box {
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .status-loading {
+            background: #fff3cd;
+            color: #856404;
+            border-left: 4px solid #ffc107;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #6a11cb;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .admin-email {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 14px;
+            word-break: break-all;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            margin-top: 20px;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .icon {
+            font-size: 50px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 480px) {
+            .setup-container {
+                padding: 30px 20px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+    
+    <!-- Import Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <div class="setup-container">
+        <div class="icon">⚙️</div>
+        <h1>Configuration Administrateur</h1>
+        <p class="subtitle">Configuration automatique en cours...</p>
+        
+        <div id="statusBox" class="status-box status-loading">
+            <div class="spinner"></div>
+            <p>Connexion à Firebase...</p>
+        </div>
+        
+        <div id="resultBox" style="display: none;"></div>
+    </div>
+
+    <script>
+        // Configuration Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyAHOSjv-XCmq9A54HMs1e0f78WkqswwpBI",
+            authDomain: "ariane-e34cf.firebaseapp.com",
+            projectId: "ariane-e34cf",
+            storageBucket: "ariane-e34cf.firebasestorage.app",
+            messagingSenderId: "127746485352",
+            appId: "1:127746485352:web:42cb9b5a00636e50255fdd",
+            measurementId: "G-QWNL5MRVK4"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Email administrateur
+        const adminEmail = 'eva652811@gmail.com';
+
+        // Configuration automatique
+        async function setupAdmin() {
+            const statusBox = document.getElementById('statusBox');
+            const resultBox = document.getElementById('resultBox');
+            
+            try {
+                // Attendre un peu pour l'effet visuel
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                statusBox.innerHTML = `
+                    <div class="spinner"></div>
+                    <p>Configuration de l'administrateur...</p>
+                `;
+                
+                // Créer le document admin dans Firestore
+                await db.collection('config').doc('admin').set({
+                    email: adminEmail,
+                    configuredAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                // Succès !
+                statusBox.style.display = 'none';
+                resultBox.style.display = 'block';
+                resultBox.className = 'status-box status-success';
+                resultBox.innerHTML = `
+                    <div class="icon">✅</div>
+                    <h2>Configuration réussie !</h2>
+                    <p style="margin-top: 15px;">L'administrateur a été configuré avec succès.</p>
+                    <div class="admin-email">
+                        <strong>Email admin :</strong><br>
+                        ${adminEmail}
+                    </div>
+                    <p style="margin-top: 15px; font-size: 14px; color: #666;">
+                        Vous pouvez maintenant vous connecter avec cet email.<br>
+                        Le lien "Dashboard Admin" apparaîtra automatiquement dans la navbar.
+                    </p>
+                    <a href="login.html" class="btn">Se connecter maintenant</a>
+                `;
+                
+                console.log('✅ Admin configuré avec succès:', adminEmail);
+                
+            } catch (error) {
+                console.error('❌ Erreur lors de la configuration:', error);
+                
+                statusBox.style.display = 'none';
+                resultBox.style.display = 'block';
+                resultBox.className = 'status-box status-error';
+                resultBox.innerHTML = `
+                    <div class="icon">❌</div>
+                    <h2>Erreur de configuration</h2>
+                    <p style="margin-top: 15px;">Une erreur s'est produite :</p>
+                    <div class="admin-email" style="background: #ffebee; color: #c62828;">
+                        ${error.message}
+                    </div>
+                    <p style="margin-top: 15px; font-size: 14px;">
+                        Vérifiez que Firestore est bien activé dans votre projet Firebase.
+                    </p>
+                    <a href="#" onclick="location.reload()" class="btn">Réessayer</a>
+                `;
+            }
+        }
+
+        // Lancer la configuration au chargement
+        window.addEventListener('DOMContentLoaded', setupAdmin);
+    </script>
+</body>
+</html>

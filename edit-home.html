@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Édition Page d'Accueil</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="scripts/firebase-config.js"></script>
+    <script src="scripts/editor-components.js"></script>
+    <script src="scripts/cloudinary-config.js"></script>
+    
+    <link rel="stylesheet" href="styles/navbar.css">
+    
+    <style>
+        *{
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--background-color);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 20px 15px 90px;
+            min-height: 100vh;
+        }
+
+        .page-header {
+            margin-bottom: 30px;
+            padding: 20px 0;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .page-subtitle {
+            color: var(--text-secondary);
+            font-size: 16px;
+            line-height: 1.4;
+        }
+
+        /* Sections accordéon */
+        .sections-container {
+            background: var(--background-color);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-accordion {
+            background: var(--background-color);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .section-accordion.active {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-accordion.touch-active {
+            background: #f0f0f0 !important;
+            transition: background 0.2s;
+        }
+
+        .section-accordion.dragging {
+            opacity: 0.5;
+            transform: scale(0.98);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .section-accordion.drag-over {
+            border-top: 3px solid var(--primary-color);
+            margin-top: 10px;
+            transition: all 0.2s;
+        }
+
+        .accordion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+            user-select: none;
+        }
+
+        .accordion-header:hover {
+            background: rgba(0, 0, 0, 0.02);
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .section-icon {
+            width: 24px;
+            height: 24px;
+            color: var(--primary-color);
+        }
+
+        .section-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 16px;
+        }
+
+        .section-type {
+            font-size: 12px;
+            color: white;
+            background: var(--primary-color);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .accordion-chevron {
+            transition: transform 0.3s;
+            color: var(--text-secondary);
+        }
+
+        .section-accordion.active .accordion-chevron {
+            transform: rotate(180deg);
+        }
+
+        .accordion-content {
+            padding: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, padding 0.3s;
+            border-top: 1px solid transparent;
+        }
+
+        .section-accordion.active .accordion-content {
+            padding: 20px;
+            max-height: 500px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .section-preview {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .section-actions {
+            display: flex;
+            gap: 10px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .drag-handle {
+            cursor: grab;
+            padding: 8px;
+            border-radius: 6px;
+            transition: background 0.2s;
+            margin-right: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            touch-action: none;
+        }
+
+        .drag-handle:hover {
+            background: var(--hover-bg);
+            color: var(--primary-color);
+        }
+
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+
+        .empty-state {
+            user-select: none;
+            pointer-events: none;
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 20px;
+            color: var(--border-color);
+        }
+
+        .empty-state-title {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+            min-width: 100px;
+        }
+
+        .btn-edit {
+            background: var(--accent-gradient);
+            color: white;
+        }
+
+        .btn-edit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(106, 17, 203, 0.3);
+        }
+
+        .btn-delete {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        /* Éditeur en bas de page */
+        .bottom-editor {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--background-color);
+            border-top: 1px solid var(--border-color);
+            padding: 15px;
+            box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .editor-input-container {
+            position: relative;
+        }
+
+        #contentEditor {
+            width: 100%;
+            min-height: 50px;
+            max-height: 150px;
+            padding: 15px 50px 15px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: inherit;
+            background: var(--background-color);
+            color: var(--text-primary);
+            resize: none;
+            overflow-y: auto;
+        }
+
+        #contentEditor:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .send-button {
+            position: absolute;
+            right: 10px;
+            bottom: 10px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .send-button:hover {
+            background: var(--primary-color);
+            transform: scale(1.05);
+        }
+
+        /* Suggestions dropdown */
+        .suggestions-dropdown {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            right: 0;
+            background: var(--background-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1001;
+            display: none;
+        }
+
+        .suggestion-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--hover-bg);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: background 0.2s;
+        }
+
+        .suggestion-item:hover {
+            background: var(--hover-bg);
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+
+        .suggestion-icon {
+            width: 24px;
+            height: 24px;
+            color: var(--primary-color);
+            flex-shrink: 0;
+        }
+
+        .suggestion-content {
+            flex: 1;
+        }
+
+        .suggestion-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .suggestion-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        /* Instructions */
+        .instructions {
+            background: var(--hover-bg);
+            border-radius: 12px;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 14px;
+            color: var(--text-secondary);
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .instructions h4 {
+            margin-top: 0;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .instructions ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .instructions li {
+            margin-bottom: 5px;
+        }
+
+        /* Boutons d'action */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: var(--accent-gradient);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(106, 17, 203, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--hover-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        /* Mode mobile */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px 10px 90px;
+            }
+            
+            .page-title {
+                font-size: 24px;
+            }
+            
+            .section-actions {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="navbar-container"></div>
+
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">Édition Page d'Accueil</h1>
+            <p class="page-subtitle">Écrivez votre contenu en bas, tapez # pour ajouter des éléments</p>
+        </div>
+
+        <div class="instructions">
+            <h4>📝 Comment éditer :</h4>
+            <ul>
+                <li>Écrivez votre texte dans le champ en bas de la page</li>
+                <li>Tapez <strong>#</strong> pour voir les suggestions d'éléments</li>
+                <li>Sélectionnez un élément pour l'ajouter automatiquement</li>
+                <li>Appuyez sur l'icône d'envoi pour ajouter votre texte</li>
+                <li><strong>Glissez-déposez</strong> les éléments via les 6 points pour les réorganiser</li>
+            </ul>
+        </div>
+
+        <div class="sections-container">
+            <h3 style="margin-bottom: 15px; color: var(--text-primary); font-size: 18px;">
+                Éléments de votre page
+                <span style="font-size: 12px; color: var(--text-secondary); margin-left: 10px;">
+                    (<span id="sectionsCount">0</span> éléments)
+                </span>
+            </h3>
+
+            <div id="sectionsAccordion">
+                <!-- Les sections seront ajoutées ici dynamiquement -->
+            </div>
+
+            <div class="action-buttons">
+                <button type="button" class="btn btn-primary" onclick="homepageEditor.saveHomepage()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                        <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                        <polyline points="7 3 7 8 15 8"></polyline>
+                    </svg>
+                    Enregistrer
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="homepageEditor.resetToDefault()">
+                    Réinitialiser
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Éditeur en bas de page -->
+    <div class="bottom-editor">
+        <div class="editor-input-container">
+            <textarea 
+                id="contentEditor" 
+                placeholder="Écrivez votre contenu ici... Tapez # pour ajouter des éléments (bannière, titre, image, etc.)"
+                oninput="homepageEditor.handleEditorInput()"
+                onkeydown="homepageEditor.handleEditorKeydown(event)"
+            ></textarea>
+            
+            <button class="send-button" onclick="homepageEditor.addTextSection()" id="sendButton">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+            </button>
+            
+            <div class="suggestions-dropdown" id="suggestionsDropdown">
+                <!-- Les suggestions seront ajoutées ici dynamiquement -->
+            </div>
+        </div>
+    </div>
+
+    <script src="navbar.js"></script>
+    
+    <script>
+
+// Vérifier l'accès admin
+let dragDropManager = null;
+
+auth.onAuthStateChanged(async function(user) {
+    if (user) {
+        const isAdmin = await checkIfAdmin(user.email);
+        if (!isAdmin) {
+            alert('Accès refusé. Cette page est réservée aux administrateurs.');
+            window.location.href = 'index.html';
+            return;
+        }
+        
+        // Initialiser l'éditeur
+        homepageEditor.init();
+    } else {
+        window.location.href = 'login.html';
+    }
+});
+
+async function checkIfAdmin(userEmail) {
+    try {
+        const configDoc = await db.collection('config').doc('admin').get();
+        if (configDoc.exists) {
+            return userEmail === configDoc.data().email;
+        }
+        return false;
+    } catch (error) {
+        console.error('Erreur vérification admin:', error);
+        return false;
+    }
+}
+
+// Fonctionnalité de drag & drop pour réorganiser les sections
+class DragDropManager {
+    constructor() {
+        this.draggedItem = null;
+        this.dragStartY = 0;
+        this.isDragging = false;
+        this.touchStartTime = 0;
+        this.minDragThreshold = 10;
+        this.dropTarget = null;
+        this.potentialDragItem = null;
+        this.boundHandlers = null;
+    }
+
+    init() {
+        // Nettoyer les anciens événements si existants
+        this.destroy();
+        
+        // Créer des handlers liés pour pouvoir les retirer plus tard
+        this.boundHandlers = {
+            mouseDown: (e) => this.handleMouseDown(e),
+            mouseMove: (e) => this.handleMouseMove(e),
+            mouseUp: () => this.handleMouseUp(),
+            touchStart: (e) => this.handleTouchStart(e),
+            touchMove: (e) => this.handleTouchMove(e),
+            touchEnd: () => this.handleTouchEnd()
+        };
+        
+        this.bindEvents();
+        console.log('✅ Drag & Drop initialisé');
+    }
+
+    destroy() {
+        if (this.boundHandlers) {
+            document.removeEventListener('mousedown', this.boundHandlers.mouseDown);
+            document.removeEventListener('mousemove', this.boundHandlers.mouseMove);
+            document.removeEventListener('mouseup', this.boundHandlers.mouseUp);
+            document.removeEventListener('touchstart', this.boundHandlers.touchStart);
+            document.removeEventListener('touchmove', this.boundHandlers.touchMove);
+            document.removeEventListener('touchend', this.boundHandlers.touchEnd);
+        }
+    }
+
+    bindEvents() {
+        // Empêcher le drag natif
+        document.addEventListener('dragstart', (e) => e.preventDefault());
+        
+        // Desktop - événements souris
+        document.addEventListener('mousedown', this.boundHandlers.mouseDown, true);
+        document.addEventListener('mousemove', this.boundHandlers.mouseMove);
+        document.addEventListener('mouseup', this.boundHandlers.mouseUp);
+        
+        // Mobile - événements tactiles
+        document.addEventListener('touchstart', this.boundHandlers.touchStart, { passive: false, capture: true });
+        document.addEventListener('touchmove', this.boundHandlers.touchMove, { passive: false });
+        document.addEventListener('touchend', this.boundHandlers.touchEnd);
+    }
+
+    handleMouseDown(e) {
+        const dragHandle = e.target.closest('.drag-handle');
+        if (!dragHandle) return;
+        
+        const section = dragHandle.closest('.section-accordion');
+        if (!section) return;
+        
+        console.log('🖱️ Mouse down sur drag handle');
+        e.preventDefault();
+        e.stopPropagation();
+        this.startDrag(section, e.clientY);
+    }
+
+    handleMouseMove(e) {
+        if (!this.isDragging || !this.draggedItem) return;
+        this.updateDrag(e.clientY);
+    }
+
+    handleMouseUp() {
+        if (this.isDragging) {
+            console.log('🖱️ Mouse up - fin du drag');
+            this.finishDrag();
+        }
+    }
+
+    handleTouchStart(e) {
+        const dragHandle = e.target.closest('.drag-handle');
+        if (!dragHandle) return;
+        
+        const section = dragHandle.closest('.section-accordion');
+        if (!section) return;
+        
+        console.log('👆 Touch start sur drag handle');
+        e.preventDefault();
+        e.stopPropagation();
+        
+        this.touchStartTime = Date.now();
+        this.dragStartY = e.touches[0].clientY;
+        this.potentialDragItem = section;
+        
+        section.classList.add('touch-active');
+    }
+
+    handleTouchMove(e) {
+        if (!this.potentialDragItem && !this.isDragging) return;
+        
+        const touch = e.touches[0];
+        const deltaY = Math.abs(touch.clientY - this.dragStartY);
+        
+        if (deltaY > this.minDragThreshold && !this.isDragging && this.potentialDragItem) {
+            console.log('👆 Début du drag tactile');
+            this.startDrag(this.potentialDragItem, this.dragStartY);
+            this.isDragging = true;
+            
+            if (navigator.vibrate) navigator.vibrate(50);
+        }
+        
+        if (this.isDragging) {
+            e.preventDefault();
+            this.updateDrag(touch.clientY);
+        }
+    }
+
+    handleTouchEnd() {
+        if (this.potentialDragItem && !this.isDragging) {
+            this.potentialDragItem.classList.remove('touch-active');
+        }
+        
+        if (this.isDragging) {
+            console.log('👆 Touch end - fin du drag');
+            this.finishDrag();
+            this.isDragging = false;
+        }
+        
+        this.potentialDragItem = null;
+    }
+
+    startDrag(section, startY) {
+        this.draggedItem = section;
+        this.dragStartY = startY;
+        this.isDragging = true;
+        
+        console.log('🎯 Début du drag:', section.getAttribute('data-id'));
+        
+        this.draggedItem.classList.add('dragging');
+        this.draggedItem.classList.remove('touch-active');
+        
+        document.body.style.userSelect = 'none';
+        document.body.style.overflow = 'hidden';
+        
+        this.draggedItem.style.cursor = 'grabbing';
+        this.draggedItem.style.zIndex = '1000';
+        this.draggedItem.style.position = 'relative';
+    }
+
+    updateDrag(currentY) {
+        if (!this.draggedItem) return;
+        
+        const deltaY = currentY - this.dragStartY;
+        this.draggedItem.style.transform = `translateY(${deltaY}px)`;
+        
+        const sections = Array.from(document.querySelectorAll('.section-accordion:not(.dragging)'));
+        const draggedRect = this.draggedItem.getBoundingClientRect();
+        const draggedCenter = draggedRect.top + draggedRect.height / 2;
+        
+        sections.forEach(s => s.classList.remove('drag-over'));
+        
+        this.dropTarget = null;
+        for (let i = 0; i < sections.length; i++) {
+            const section = sections[i];
+            const rect = section.getBoundingClientRect();
+            const sectionCenter = rect.top + rect.height / 2;
+            
+            if (draggedCenter < sectionCenter) {
+                this.dropTarget = section;
+                section.classList.add('drag-over');
+                break;
+            }
+        }
+        
+        if (!this.dropTarget && sections.length > 0) {
+            this.dropTarget = sections[sections.length - 1];
+            this.dropTarget.classList.add('drag-over');
+        }
+    }
+
+    finishDrag() {
+        if (!this.draggedItem) return;
+        
+        console.log('✅ Fin du drag');
+        
+        document.querySelectorAll('.section-accordion').forEach(section => {
+            section.classList.remove('drag-over', 'touch-active');
+        });
+        
+        this.draggedItem.classList.remove('dragging');
+        this.draggedItem.style.transform = '';
+        this.draggedItem.style.cursor = '';
+        this.draggedItem.style.zIndex = '';
+        this.draggedItem.style.position = '';
+        
+        if (this.dropTarget) {
+            const container = this.draggedItem.parentNode;
+            const sections = Array.from(container.querySelectorAll('.section-accordion'));
+            const draggedIndex = sections.indexOf(this.draggedItem);
+            const targetIndex = sections.indexOf(this.dropTarget);
+            
+            console.log(`📦 Déplacement: ${draggedIndex} → ${targetIndex}`);
+            
+            if (draggedIndex < targetIndex) {
+                this.dropTarget.parentNode.insertBefore(this.draggedItem, this.dropTarget.nextSibling);
+            } else {
+                this.dropTarget.parentNode.insertBefore(this.draggedItem, this.dropTarget);
+            }
+            
+            this.updateSectionsOrder();
+        }
+        
+        this.draggedItem = null;
+        this.dropTarget = null;
+        this.isDragging = false;
+        
+        document.body.style.userSelect = '';
+        document.body.style.overflow = '';
+    }
+
+    updateSectionsOrder() {
+        const sections = Array.from(document.querySelectorAll('.section-accordion'));
+        
+        console.log('🔄 Mise à jour de l\'ordre des sections');
+        
+        sections.forEach((domElement, index) => {
+            const sectionId = domElement.getAttribute('data-id');
+            const section = homepageEditor.homepageSections.find(s => s.id === sectionId);
+            if (section) {
+                section.order = index;
+                console.log(`  - ${sectionId}: order = ${index}`);
+            }
+        });
+        
+        homepageEditor.homepageSections.sort((a, b) => a.order - b.order);
+    }
+}
+
+// Fonction globale pour réinitialiser le drag & drop
+window.reinitDragDrop = function() {
+    console.log('🔄 Réinitialisation du Drag & Drop');
+    if (dragDropManager) {
+        dragDropManager.destroy();
+    }
+    dragDropManager = new DragDropManager();
+    dragDropManager.init();
+};
+
+    </script>
+
+<script src="dashboard-back-button.js"></script>
+</body>
+</html>

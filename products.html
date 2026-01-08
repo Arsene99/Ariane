@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nos Produits</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="scripts/firebase-config.js"></script>
+    
+    <link rel="stylesheet" href="styles/navbar.css">
+    
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--background-color);
+            color: var(--text-primary);
+        }
+
+        .container {
+            max-width: 100%;
+            padding: 20px 0;
+        }
+
+        .page-header {
+            padding: 20px 20px 30px;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        .page-title {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .page-subtitle {
+            color: var(--text-secondary);
+            font-size: 16px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-filter-container {
+            padding: 0 20px 20px;
+            display: flex;
+            gap: 12px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        .search-bar {
+            flex: 1;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 14px 48px 14px 16px;
+            background: var(--background-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            pointer-events: none;
+        }
+
+        .category-filter {
+            min-width: 180px;
+            position: relative;
+        }
+
+        .category-select {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--background-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 16px;
+            outline: none;
+            appearance: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .category-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+
+        .select-arrow {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            pointer-events: none;
+        }
+
+        .products-list {
+            padding: 0 20px;
+        }
+
+        .product-item {
+            margin-bottom: 40px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 40px;
+        }
+
+        .product-item:last-child {
+            margin-bottom: 0;
+            border-bottom: none;
+        }
+
+        .product-info {
+            margin-bottom: 20px;
+        }
+
+        .product-name {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+
+        .product-description {
+            color: var(--text-secondary);
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 0;
+        }
+
+        .product-description.collapsed {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .see-more-btn {
+            color: var(--primary-color);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            padding: 8px 0 0 0;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        .see-more-btn:hover {
+            text-decoration: underline;
+        }
+
+        .product-image-container {
+            position: relative;
+            width: 100%;
+            margin-bottom: 16px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: var(--background-color);
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .product-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: contain;
+            max-height: 500px;
+        }
+
+        .no-image-placeholder {
+            width: 100%;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--accent-gradient);
+            color: white;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .image-overlay {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+
+        .category-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: var(--accent-gradient);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+            pointer-events: auto;
+        }
+
+        .price-badge {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            backdrop-filter: blur(10px);
+        }
+
+        .images-count-badge {
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            pointer-events: auto;
+        }
+
+        .whatsapp-btn {
+            width: 100%;
+            padding: 16px 24px;
+            background: #25D366;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+            margin-top: 16px;
+        }
+
+        .whatsapp-btn:hover {
+            background: #128C7E;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(37, 211, 102, 0.3);
+        }
+
+        .whatsapp-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .whatsapp-icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state svg {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 24px;
+            opacity: 0.3;
+        }
+
+        .empty-state h3 {
+            font-size: 20px;
+            margin-bottom: 12px;
+            color: var(--text-primary);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--border-color);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 28px;
+            }
+            
+            .page-subtitle {
+                font-size: 14px;
+            }
+            
+            .search-filter-container {
+                flex-direction: column;
+                gap: 12px;
+                padding: 0 16px 16px;
+            }
+            
+            .category-filter {
+                min-width: 100%;
+            }
+            
+            .product-name {
+                font-size: 20px;
+            }
+            
+            .product-description {
+                font-size: 15px;
+            }
+            
+            .products-list {
+                padding: 0 16px;
+            }
+            
+            .product-item {
+                margin-bottom: 32px;
+                padding-bottom: 32px;
+            }
+            
+            .price-badge {
+                font-size: 16px;
+                padding: 6px 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .page-header {
+                padding: 16px 16px 24px;
+            }
+            
+            .page-title {
+                font-size: 24px;
+            }
+            
+            .search-input,
+            .category-select {
+                padding: 12px 44px 12px 12px;
+                font-size: 15px;
+            }
+            
+            .product-name {
+                font-size: 18px;
+            }
+            
+            .category-badge {
+                font-size: 12px;
+                padding: 4px 10px;
+            }
+            
+            .whatsapp-btn {
+                padding: 14px 20px;
+                font-size: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="navbar-container"></div>
+
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">Nos Produits</h1>
+            <p class="page-subtitle">Découvrez notre sélection de produits soigneusement choisis pour vous</p>
+        </div>
+
+        <div class="search-filter-container">
+            <div class="search-bar">
+                <input type="text" 
+                       class="search-input" 
+                       placeholder="Rechercher un produit..."
+                       id="searchInput">
+                <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+            </div>
+            
+            <div class="category-filter">
+                <select class="category-select" id="categorySelect">
+                    <option value="all">Toutes les catégories</option>
+                </select>
+                <svg class="select-arrow" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+            </div>
+        </div>
+
+        <div id="productsContainer">
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                <p>Chargement des produits...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="scripts/image-viewer.js"></script>
+    <script src="navbar.js"></script>
+    
+    <script>
+        let allProducts = [];
+        let allCategories = {};
+        let currentCategory = 'all';
+        let currentSearch = '';
+        let whatsappNumber = null;
+
+        window.addEventListener('DOMContentLoaded', function() {
+            loadNavbar();
+            loadData();
+            
+            document.getElementById('searchInput').addEventListener('input', function(e) {
+                currentSearch = e.target.value.toLowerCase().trim();
+                renderProducts();
+            });
+            
+            document.getElementById('categorySelect').addEventListener('change', function(e) {
+                currentCategory = e.target.value;
+                renderProducts();
+            });
+        });
+
+        async function loadData() {
+            try {
+                // Charger le numéro WhatsApp depuis Firebase
+                const whatsappDoc = await db.collection('config').doc('whatsapp').get();
+                if (whatsappDoc.exists) {
+                    whatsappNumber = whatsappDoc.data().number;
+                    console.log('Numéro WhatsApp chargé:', whatsappNumber);
+                } else {
+                    console.warn('Aucun numéro WhatsApp configuré dans Firebase');
+                    whatsappNumber = null;
+                }
+
+                // Charger les catégories
+                const categoriesSnapshot = await db.collection('categories').orderBy('name').get();
+                categoriesSnapshot.forEach(doc => {
+                    allCategories[doc.id] = doc.data();
+                });
+
+                // Charger les produits
+                const productsSnapshot = await db.collection('products').orderBy('createdAt', 'desc').get();
+                allProducts = [];
+                productsSnapshot.forEach(doc => {
+                    allProducts.push({ id: doc.id, ...doc.data() });
+                });
+
+                populateCategorySelect();
+                renderProducts();
+
+            } catch (error) {
+                console.error('Erreur chargement données:', error);
+                document.getElementById('productsContainer').innerHTML = `
+                    <div class="empty-state">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                        <h3>Erreur de chargement</h3>
+                        <p>Impossible de charger les produits. Veuillez réessayer.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function populateCategorySelect() {
+            const select = document.getElementById('categorySelect');
+            
+            Object.entries(allCategories).forEach(([id, category]) => {
+                const option = document.createElement('option');
+                option.value = id;
+                option.textContent = category.name;
+                select.appendChild(option);
+            });
+        }
+
+        function renderProducts() {
+            const container = document.getElementById('productsContainer');
+            
+            let filteredProducts = allProducts.filter(product => {
+                if (currentCategory !== 'all' && product.categoryId !== currentCategory) {
+                    return false;
+                }
+                
+                if (currentSearch) {
+                    const searchTerm = currentSearch.toLowerCase();
+                    const nameMatch = product.name.toLowerCase().includes(searchTerm);
+                    const descMatch = product.description?.toLowerCase().includes(searchTerm) || false;
+                    const categoryName = allCategories[product.categoryId]?.name.toLowerCase() || '';
+                    const categoryMatch = categoryName.includes(searchTerm);
+                    
+                    return nameMatch || descMatch || categoryMatch;
+                }
+                
+                return true;
+            });
+
+            if (filteredProducts.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="9" cy="21" r="1"></circle>
+                            <circle cx="20" cy="21" r="1"></circle>
+                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                        </svg>
+                        <h3>Aucun produit trouvé</h3>
+                        <p>${currentSearch ? 'Essayez avec d\'autres termes de recherche' : 'Revenez bientôt pour découvrir nos nouveautés'}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '<div class="products-list">';
+            
+            filteredProducts.forEach(product => {
+                const category = allCategories[product.categoryId];
+                const categoryName = category ? category.name : 'Sans catégorie';
+                const hasImages = product.images && product.images.length > 0;
+                const description = product.description || 'Découvrez ce produit exceptionnel';
+                const needsSeeMore = description.length > 150;
+                const productElementId = `product-${product.id}`;
+                
+                // Déterminer l'état du bouton WhatsApp
+                const whatsappDisabled = !whatsappNumber;
+                const whatsappButtonText = whatsappNumber 
+                    ? 'Contacter via WhatsApp' 
+                    : 'WhatsApp non configuré';
+                
+                html += `
+                    <div class="product-item">
+                        <div class="product-info">
+                            <h3 class="product-name">${product.name}</h3>
+                            <div>
+                                <p class="product-description ${needsSeeMore ? 'collapsed' : ''}" id="desc-${product.id}">
+                                    ${description}
+                                </p>
+                                ${needsSeeMore ? `
+                                    <button class="see-more-btn" onclick="toggleDescription('${product.id}')">
+                                        <span id="btn-${product.id}">Voir plus</span>
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                        
+                        <div class="product-image-container" id="${productElementId}">
+                            ${hasImages ? `
+                                <img class="product-image" src="${product.images[0].url}" alt="${product.name}" loading="lazy">
+                            ` : `
+                                <div class="no-image-placeholder">
+                                    ${categoryName}
+                                </div>
+                            `}
+                            
+                            <div class="image-overlay">
+                                <div class="category-badge">${categoryName}</div>
+                                <div class="price-badge">${formatPrice(product.price)}</div>
+                                ${hasImages && product.images.length > 1 ? `
+                                    <div class="images-count-badge">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                            <polyline points="21 15 16 10 5 21"></polyline>
+                                        </svg>
+                                        ${product.images.length} photos
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                        
+                        <button class="whatsapp-btn" 
+                                onclick="contactWhatsApp('${product.name.replace(/'/g, "\\'")}', ${product.price})"
+                                ${whatsappDisabled ? 'disabled' : ''}>
+                            <svg class="whatsapp-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
+                            </svg>
+                            ${whatsappButtonText}
+                        </button>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+            
+            // Ajouter les event listeners pour les images
+            filteredProducts.forEach(product => {
+                if (product.images && product.images.length > 0) {
+                    const productElement = document.getElementById(`product-${product.id}`);
+                    if (productElement) {
+                        productElement.addEventListener('click', function(e) {
+                            if (e.target.closest('.category-badge') || e.target.closest('.images-count-badge')) {
+                                return;
+                            }
+                            openGallery(product.images, 0);
+                        });
+                    }
+                }
+            });
+        }
+
+        function toggleDescription(productId) {
+            const desc = document.getElementById('desc-' + productId);
+            const btn = document.getElementById('btn-' + productId);
+            
+            if (desc.classList.contains('collapsed')) {
+                desc.classList.remove('collapsed');
+                btn.textContent = 'Voir moins';
+            } else {
+                desc.classList.add('collapsed');
+                btn.textContent = 'Voir plus';
+            }
+        }
+
+        function openGallery(images, startIndex = 0) {
+            if (!images || images.length === 0) return;
+            
+            let attempts = 0;
+            const maxAttempts = 10;
+            
+            function tryOpen() {
+                if (window.imageViewer && window.imageViewer.open) {
+                    const imageUrls = images.map(img => img.url);
+                    window.imageViewer.open(imageUrls, startIndex);
+                } else if (attempts < maxAttempts) {
+                    attempts++;
+                    setTimeout(tryOpen, 100);
+                }
+            }
+            
+            tryOpen();
+        }
+
+        function contactWhatsApp(productName, price) {
+            // Vérifier si le numéro WhatsApp est configuré
+            if (!whatsappNumber) {
+                alert('Le numéro WhatsApp n\'est pas encore configuré. Veuillez contacter l\'administrateur.');
+                return;
+            }
+
+            // Créer le message
+            const message = `Bonjour, je suis intéressé(e) par le produit: ${productName} (${formatPrice(price)})`;
+            
+            // Nettoyer le numéro (enlever tous les caractères non numériques sauf le +)
+            const cleanNumber = whatsappNumber.replace(/[^\d+]/g, '');
+            
+            // Créer l'URL WhatsApp
+            const url = `https://wa.me/${cleanNumber.replace('+', '')}?text=${encodeURIComponent(message)}`;
+            
+            // Ouvrir WhatsApp
+            window.open(url, '_blank');
+        }
+
+        function formatPrice(price) {
+            return new Intl.NumberFormat('fr-FR', {
+                style: 'decimal',
+                minimumFractionDigits: 0
+            }).format(price) + ' FCFA';
+        }
+
+        // Exposer les fonctions globalement
+        window.toggleDescription = toggleDescription;
+        window.openGallery = openGallery;
+        window.contactWhatsApp = contactWhatsApp;
+    </script>
+</body>
+</html>
