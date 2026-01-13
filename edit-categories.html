@@ -306,7 +306,14 @@ function createCategoryElement(id, category) {
     div.className = 'category-item';
     div.innerHTML = `
         <div class="category-info">
-            <div class="category-icon">${getRandomEmoji()}</div>
+            <div class="category-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+            </div>
             <span class="category-name">${category.name}</span>
         </div>
         <div class="category-actions">
@@ -328,7 +335,6 @@ function createCategoryElement(id, category) {
     `;
     return div;
 }
-
 // Add new category
 async function addCategory() {
     const nameInput = document.getElementById('categoryNameInput');
@@ -401,11 +407,6 @@ async function deleteCategory(id, name) {
     }
 }
 
-// Get random emoji for category icon
-function getRandomEmoji() {
-    const emojis = ['📱', '👔', '🏠', '📚', '🎮', '⚽', '🎨', '🍔', '✈️', '💻', '🎵', '📷', '🏋️', '🌿'];
-    return emojis[Math.floor(Math.random() * emojis.length)];
-}
 
 // Allow Enter key to add category
 document.addEventListener('DOMContentLoaded', function() {

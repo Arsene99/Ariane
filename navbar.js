@@ -247,7 +247,14 @@ async function loadDynamicCategories() {
                 const category = doc.data();
                 categoriesHTML += `
                     <a href="products.html?category=${doc.id}" class="category-item" data-category="${doc.id}">
-                        <div class="category-icon">${getCategoryEmoji(category.name)}</div>
+                        <div class="category-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="14" width="7" height="7"></rect>
+                                <rect x="3" y="14" width="7" height="7"></rect>
+                            </svg>
+                        </div>
                         <span>${category.name}</span>
                     </a>
                 `;
@@ -258,24 +265,6 @@ async function loadDynamicCategories() {
         console.error('Erreur lors du chargement des catégories:', error);
     }
 }
-
-function getCategoryEmoji(categoryName) {
-    const emojiMap = {
-        'électronique': '💻',
-        'mode': '👔',
-        'maison': '🏠',
-        'livres': '📚',
-        'jeux': '🎮',
-        'sport': '⚽',
-        'art': '🎨',
-        'cuisine': '🍔',
-        'voyage': '✈️'
-    };
-    
-    const key = categoryName.toLowerCase();
-    return emojiMap[key] || '📦';
-}
-
 async function setupNavbarEvents() {
     firebase.auth().onAuthStateChanged(async function(user) {
         if (user) {
