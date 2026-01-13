@@ -96,14 +96,14 @@ class HomepageRenderer {
 .homepage-text h3 {
     margin-bottom: 20px;
     font-size: 28px;
-    color: #1d1d1f;
+    color: var(--text-primary);
     font-weight: 600;
     text-align: center;
 }
 
 .homepage-text p {
     line-height: 1.8;
-    color: #444;
+    color: var(--text-secondary);
     font-size: 18px;
     margin: 0 auto;
     max-width: 600px;
@@ -140,7 +140,7 @@ class HomepageRenderer {
 
             .image-caption {
                 font-size: 16px;
-                color: #666;
+                color: var(--text-secondary);
                 margin-top: 15px;
                 font-style: italic;
             }
@@ -160,7 +160,7 @@ class HomepageRenderer {
             .homepage-cta h3 {
                 margin-bottom: 25px;
                 font-size: 24px;
-                color: #1d1d1f;
+                color: var(--text-primary);
                 font-weight: 600;
             }
 
@@ -191,7 +191,7 @@ class HomepageRenderer {
 
 .separator-line {
     border: none;
-    border-top: 2px solid #e0e0e0;
+    border-top: 2px solid var(--border-color);
     width: 100px;
     margin: 0 auto;
 }
@@ -202,7 +202,7 @@ class HomepageRenderer {
                 margin: 100px auto;
                 padding: 60px 40px;
                 text-align: center;
-                background: white;
+                background: var(--menu-bg);
                 border-radius: 20px;
                 box-shadow: 0 5px 30px rgba(0, 0, 0, 0.1);
                 animation: fadeIn 0.8s ease-out;
@@ -218,7 +218,7 @@ class HomepageRenderer {
 
             .default-message p {
                 font-size: 18px;
-                color: #666;
+                color: var(--text-secondary);
                 margin-bottom: 30px;
                 line-height: 1.6;
             }
@@ -352,7 +352,7 @@ case 'image':
                 <div class="image-container">
                     <img src="${section.image}" alt="${section.caption || ''}">
                 </div>
-            ` : '<p style="color: #999; font-style: italic; padding: 40px 0; text-align: center;">Aucune image</p>'}
+            ` : '<p style="color: var(--text-secondary); font-style: italic; padding: 40px 0; text-align: center;">Aucune image</p>'}
             ${imageCaption}
         </div>
     `;
