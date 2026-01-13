@@ -151,8 +151,6 @@ body.dark-mode {
     object-fit: cover;
 }
 
-/* Point vert de statut supprimé */
-
 /* Profile Menu Dropdown */
 .profile-menu {
     position: absolute;
@@ -259,7 +257,7 @@ body.dark-mode {
     top: 100%;
     left: 0;
     right: 0;
-    background: var(--backgroudg-color);
+    background: var(--background-color);
     box-shadow: 0 8px 24px var(--navbar-shadow);
     padding: 30px;
     opacity: 0;
@@ -302,6 +300,7 @@ body.dark-mode {
     transform: translateY(-4px);
     box-shadow: 0 8px 20px rgba(106, 17, 203, 0.3);
 }
+
 .category-icon {
     width: 50px;
     height: 50px;
@@ -323,6 +322,7 @@ body.dark-mode {
 .category-item:hover .category-icon svg {
     stroke: white;
 }
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .navbar-content {
@@ -335,11 +335,11 @@ body.dark-mode {
     }
 
     .nav-icons-left,
-.nav-icons-right {
-    display: flex;
-    gap: 50px;
-    flex: 1;
-}
+    .nav-icons-right {
+        display: flex;
+        gap: 50px;
+        flex: 1;
+    }
     
     .nav-icon-btn svg {
         width: 35px;
@@ -421,7 +421,20 @@ body.dark-mode {
     }
 }
 
-/* Add spacing for content below navbar */
+/* ESPACEMENT POUR LE CONTENU SOUS LA NAVBAR */
+/* Augmenté pour tenir compte de la photo de profil qui déborde */
 body {
-    padding-top: 70px;
+    padding-top: 140px; /* Augmenté de 70px à 140px */
+}
+
+@media (max-width: 768px) {
+    body {
+        padding-top: 120px; /* Ajusté pour mobile avec photo de 80px */
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding-top: 110px; /* Ajusté pour petit mobile avec photo de 70px */
+    }
 }
